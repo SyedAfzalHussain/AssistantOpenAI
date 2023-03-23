@@ -8,65 +8,71 @@
     <title>Afzal's AI</title>
 </head>
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #1b1b1b;
+        color: #fff;
         font-family: 'Poppins', sans-serif;
-font-family: 'Roboto', sans-serif;
     }
 
-    body {
-        background-color: #1b1b1b;
+    .container {
+        width: 80%;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
-        height: 100vh;
+        justify-content: center;
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 2rem;
+        font-family: 'Roboto', sans-serif;
     }
 
     .form {
-        width: 500px;
-        height: 500px;
-        background-color: #fff;
-        border-radius: 10px;
         display: flex;
         flex-direction: column;
-        justify-content: center;
         align-items: center;
-        padding: 20px;
+        justify-content: center;
+        height: 100vh;
     }
 
-    .form h1 {
-        font-size: 2rem;
-        margin-bottom: 20px;
-    }
-
-    .form input {
-        width: 100%;
+    input {
+        width: 300px;
         height: 50px;
-        border: 1px solid #ccc;
+        border: none;
         border-radius: 5px;
-        padding: 10px;
+        padding: 0 10px;
+        margin: 10px 0;
         font-size: 1.2rem;
-        margin-bottom: 20px;
     }
 
-    .form button {
-        width: 100%;
+    button {
+        width: 300px;
         height: 50px;
-        border: 1px solid #ccc;
+        border: none;
         border-radius: 5px;
-        padding: 10px;
+        background-color: #fff;
+        color: #000;
         font-size: 1.2rem;
-        margin-bottom: 20px;
-        background-color: #1b1b1b;
-        color: #fff;
         cursor: pointer;
     }
 
-    .form button:hover {
+    button:hover {
+        background-color: #000;
+        color: #fff;
+    }
+
+    #submit {
+        background-color: #000;
+        color: #fff;
+    }
+
+    #submit:hover {
         background-color: #fff;
-        color: #1b1b1b;
+        color: #000;
     }
 </style>
 
@@ -75,12 +81,68 @@ font-family: 'Roboto', sans-serif;
 <link href="https://fonts.googleapis.com/css2?family=Poppins&family=Roboto&display=swap" rel="stylesheet">
 
 <body>
-    
-    <form action="/message" method="get" class="form">
-        <h1>Ask me anything, I will answer</h1>
-        <input type="text" id="question" name="question" placeholder="Ask me anything" required>
-        <button id="submit">Give Answer</button>
-    </form>
+    <h1>Ask me anything, I will answer</h1>
+    <div class="container">
+        <div class="innerContainer">
+            <input type="text" id="question" placeholder="Ask me ">
+            <button id="recordVoice">Record Voice</button>
+            <button id="sendMessage">Send Text</button>
+            <button onclick="readMessage()">Read Loud</button>
+
+        </div>
+        <h3>Your Answer: </h3>
+        <div>Your Answer Will Display Here</div>
+        <div id="dataDiv"></div>
+    </div>
+    <script>
+        var transcript;
+
+        const recordVoice = document.getElementById('recordVoice');
+        recordVoice.addEventListener('click', () => {
+            if ('webkitSpeechRecognition' in window) {
+                const recognition = new webkitSpeechRecognition();
+                recognition.lang = 'en-US';
+                recognition.maxDuration = 5;
+                recognition.start();
+                // setTimeout(() => recognition.stop(), 5000);
+                recognition.addEventListener('result', (event) => {
+                    transcript = event.results[0][0].transcript;
+                    const url = `http://localhost:3000/message?question=${transcript}`;
+                    fetch(url)
+                        .then(res => res.json())
+                        .then(data => {
+                            console.log(typeof (data));
+                            document.getElementById('dataDiv').innerHTML = data;
+                            readMessage();
+                        })
+                    console.log(`Transcript: ${transcript}`);
+                });
+            } else {
+                console.log('Web Speech API is not supported by this browser');
+            }
+        })
+        function readMessage() {
+            const paragraph = document.getElementById("dataDiv").innerHTML;
+            const message = new SpeechSynthesisUtterance();
+            message.voiceURI = 'Google UK English Female';
+            message.text = paragraph;
+            message.lang = 'en-GB';
+            speechSynthesis.speak(message);
+        }
+        const submit = document.getElementById('sendMessage');
+        submit.addEventListener('click', () => {
+            const question = document.getElementById('question').value;
+            console.log(question)
+            const url = `http://localhost:3000/message?question=${question}`;
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    console.log(typeof (data));
+                    document.getElementById('dataDiv').innerHTML = data;
+                    readMessage();
+                })
+        })
+    </script>
 </body>
 
 </html>

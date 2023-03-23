@@ -17,9 +17,9 @@ app.get('/message', (req, res) => {
 
     openai.createChatCompletion({
         model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: `${req.query.question}` }],
+        messages: [{ role: "user", content: `${req.query.question}`}],
     }).then(response => {
-        res.send(response.data.choices[0].message.content)
+        res.send(JSON.stringify(response.data.choices[0].message.content));
         console.log(response.data.choices[0].message.content)
     }).catch((err) => {
         console.log(err)
@@ -29,10 +29,5 @@ app.get('/message', (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log(`Server running at port ` + port);
+    console.log(`http://localhost:${port}`);
 });
-
-
-
-
-//create a
